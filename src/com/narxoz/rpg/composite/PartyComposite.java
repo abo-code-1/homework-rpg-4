@@ -74,9 +74,10 @@ public class PartyComposite implements CombatNode {
 
     @Override
     public void printTree(String indent) {
-        // TODO: Tree visualization
-        // Print this node and recurse into children with increased indent.
-        System.out.println(indent + "+ " + name + " [TODO: compute HP/ATK]");
+        System.out.println(indent + "+ " + name + " [HP=" + getHealth() + ", ATK=" + getAttackPower() + "]");
+        for (CombatNode child : children) {
+            child.printTree(indent + "  ");
+        }
     }
 
     private List<CombatNode> getAliveChildren() {

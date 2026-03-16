@@ -14,20 +14,75 @@ public class RaidEngine {
     }
 
     public RaidResult runRaid(CombatNode teamA, CombatNode teamB, Skill teamASkill, Skill teamBSkill) {
-        // TODO: Validate inputs (null checks, alive checks, required skills).
-        // TODO: Implement round-based simulation:
-        // 1) Team A casts on Team B
-        // 2) Team B casts on Team A (if still alive)
-        // 3) Track rounds and log each step
-        // 4) Stop when one team is defeated (or max rounds reached)
-        //
-        // Optional extension:
-        // Use random for critical strikes or other deterministic events.
-        // Example: boolean critA = random.nextInt(100) < 10;
         RaidResult result = new RaidResult();
-        result.setRounds(0);
-        result.setWinner("TBD");
-        result.addLine("TODO: implement raid simulation");
+
+        if (teamA == null || teamB == null || teamASkill == null || teamBSkill == null) {
+            result.setRounds(0);
+            result.setWinner("INVALID");
+            result.addLine("Error: null input detected.");
+            return result;
+        }
+
+        if (!teamA.isAlive() || !teamB.isAlive()) {
+            result.setRounds(0);
+            String winner = teamA.isAlive() ? teamA.getName() : teamB.getName();
+            result.setWinner(winner);
+            result.addLine("Raid skipped: one team is already defeated.");
+            return result;
+        }
+
+        int maxRounds = 100;
+        int round = 0;
+
+        result.addLine("=== Raid Start: " + teamA.getName() + " vs " + teamB.getName() + " ===");
+
+        while (teamA.isAlive() && teamB.isAlive() && round < maxRounds) {
+            round++;
+            result.addLine("--- Round " + round + " ---");
+
+            boolean critA = random.nextInt(100) < 10;
+            result.addLine(teamA.getName() + " uses " + teamASkill.getSkillName()
+                    + " (" + teamASkill.getEffectName() + ")" + (critA ? " *CRITICAL*" : ""));
+            if (critA) {
+                teamASkill.cast(teamB);
+                teamASkill.cast(teamB);
+            } else {
+                teamASkill.cast(teamB);
+            }
+            result.addLine("  " + teamB.getName() + " HP: " + teamB.getHealth());
+
+            if (!teamB.isAlive()) {
+                result.addLine(teamB.getName() + " is defeated!");
+                break;
+            }
+
+            boolean critB = random.nextInt(100) < 10;
+            result.addLine(teamB.getName() + " uses " + teamBSkill.getSkillName()
+                    + " (" + teamBSkill.getEffectName() + ")" + (critB ? " *CRITICAL*" : ""));
+            if (critB) {
+                teamBSkill.cast(teamA);
+                teamBSkill.cast(teamA);
+            } else {
+                teamBSkill.cast(teamA);
+            }
+            result.addLine("  " + teamA.getName() + " HP: " + teamA.getHealth());
+
+            if (!teamA.isAlive()) {
+                result.addLine(teamA.getName() + " is defeated!");
+                break;
+            }
+        }
+
+        if (!teamA.isAlive()) {
+            result.setWinner(teamB.getName());
+        } else if (!teamB.isAlive()) {
+            result.setWinner(teamA.getName());
+        } else {
+            result.setWinner("DRAW (max rounds reached)");
+        }
+
+        result.setRounds(round);
+        result.addLine("=== Raid Over: Winner is " + result.getWinner() + " in " + round + " round(s) ===");
         return result;
     }
 }
